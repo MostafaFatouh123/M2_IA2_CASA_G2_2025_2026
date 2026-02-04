@@ -27,7 +27,7 @@ class Vehicle {
     // vitesse maximale du véhicule
     this.maxSpeed = 4;
     // force maximale appliquée au véhicule
-    this.maxForce = 0.1;
+    this.maxForce = 0.2;
     this.color = "white";
     // à peu près en secondes
     this.dureeDeVie = 5;
@@ -45,15 +45,15 @@ class Vehicle {
 
     // Pour wander
     // pour comportement wander
-    this.distanceCercle = 150;
-    this.wanderRadius = 50;
+    this.distanceCercle = 200;
+    this.wanderRadius = 80;
     this.wanderTheta = -Math.PI / 2;
     this.displaceRange = 0.3;
 
     // Poids pour les comportements
-    this.seekWeight = 0.2;
+    this.seekWeight = 0.3;
     this.avoidWeight = 3;
-    this.separateWeight = 0.2;
+    this.separateWeight = 0.1;
     this.boundariesWeight = 3;
     this.wanderForceWeight = 0;
   }
@@ -65,21 +65,21 @@ class Vehicle {
     let seekForce = this.arrive(target);
     let avoidForce = this.avoid(obstacles);
     // let avoidForce = this.avoidAvecVehicules(obstacles, vehicules);
-    //let separateForce = this.separate(vehicules);
-    //let boudariesForce = this.boundaries(0, 0, width, height, 50);
-    //let wanderForce = this.wander();
+    let separateForce = this.separate(vehicules);
+    let boudariesForce = this.boundaries(0, 0, width, height, 50);
+    let wanderForce = this.wander();
 
     seekForce.mult(this.seekWeight);
     avoidForce.mult(this.avoidWeight);
-    //separateForce.mult(this.separateWeight);
-    //boudariesForce.mult(this.boundariesWeight);
-    //wanderForce.mult(this.wanderForceWeight);
+    separateForce.mult(this.separateWeight);
+    boudariesForce.mult(this.boundariesWeight);
+    wanderForce.mult(this.wanderForceWeight);
 
     this.applyForce(seekForce);
     this.applyForce(avoidForce);
-    //this.applyForce(separateForce);
-    //this.applyForce(boudariesForce);
-    //this.applyForce(wanderForce);
+    this.applyForce(separateForce);
+    this.applyForce(boudariesForce);
+    this.applyForce(wanderForce);
   }
 
 
@@ -92,8 +92,11 @@ class Vehicle {
     let ahead2 = ahead.copy();
     ahead2.mult(0.5);
 
-    // on le dessine avec ma méthode this.drawVector(pos vecteur, color)
-    this.drawVector(this.pos, ahead, "yellow");
+  
+    if (Vehicle.debug) {
+      // on le dessine avec ma méthode this.drawVector(pos vecteur, color)
+      this.drawVector(this.pos, ahead, "yellow");
+    }
 
     // Calcul des coordonnées du point au bout de ahead
     let pointAuBoutDeAhead = this.pos.copy().add(ahead);
@@ -122,9 +125,11 @@ class Vehicle {
       // On dessine la zone d'évitement
       // Pour cela on trace une ligne large qui va de la position du vaisseau
       // jusqu'au point au bout de ahead
+      push();
       stroke(100, 100);
       strokeWeight(this.largeurZoneEvitementDevantVaisseau);
       line(this.pos.x, this.pos.y, pointAuBoutDeAhead.x, pointAuBoutDeAhead.y);
+      pop();
     }
     // si la distance est < rayon de l'obstacle
     // il y a collision possible et on dessine l'obstacle en rouge
@@ -153,7 +158,7 @@ class Vehicle {
       // que vous commencez à connaitre : force = vitesse désirée - vitesse courante
       force.sub(this.vel);
       // on limite cette force à la longueur maxForce
-      force.limit(this.maxForce);
+      force.limit(this.maxForce / 2);
       return force;
     } else {
       // pas de collision possible
@@ -417,6 +422,7 @@ class Vehicle {
 
       noFill();
       stroke("white");
+      strokeWeight(2);
       rect(bx, by, bw, bh);
 
       // et du rectangle intérieur avec une bordure rouge de d pixels
